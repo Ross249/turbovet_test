@@ -465,6 +465,8 @@
                     <div
                       cdkDropList
                       [cdkDropListData]="tasksByStatus()[column.status]"
+                      [id]="dropListId(column.status)"
+                      [cdkDropListConnectedTo]="connectedDropLists(column.status)"
                       (cdkDropListDropped)="drop($event, column.status)"
                       style="
                         display: flex;

@@ -30,7 +30,14 @@ import {
   TaskStatus,
   CreateTaskRequest,
 } from '@turbovetnx/data';
-import { CdkDrag, CdkDragDrop, CdkDropList, DragDropModule } from '@angular/cdk/drag-drop';
+import {
+  CdkDrag,
+  CdkDragDrop,
+  CdkDropList,
+  DragDropModule,
+  moveItemInArray,
+  transferArrayItem,
+} from '@angular/cdk/drag-drop';
 import { OrganizationsApiService } from '../../core/api/organizations-api.service';
 import { AuditApiService } from '../../core/api/audit-api.service';
 import { OrganizationDto } from '@turbovetnx/data';
@@ -172,6 +179,14 @@ export class DashboardPageComponent implements OnInit {
     },
   ];
 
+  private readonly dropListIds: Record<TaskStatus, string> = this.statusColumns.reduce(
+    (accumulator, column) => {
+      accumulator[column.status] = `tasks-${column.status.toLowerCase().replace(/_/g, '-')}`;
+      return accumulator;
+    },
+    {} as Record<TaskStatus, string>,
+  );
+
   protected readonly createForm = this.fb.group({
     title: this.fb.nonNullable.control('', [Validators.required, Validators.maxLength(120)]),
     description: this.fb.control(''),
@@ -215,6 +230,16 @@ export class DashboardPageComponent implements OnInit {
       (definition) => definition.value === this.sort(),
     );
     return active?.label ?? 'Recently Updated';
+  }
+
+  protected dropListId(status: TaskStatus): string {
+    return this.dropListIds[status];
+  }
+
+  protected connectedDropLists(status: TaskStatus): string[] {
+    return this.statusColumns
+      .filter((column) => column.status !== status)
+      .map((column) => this.dropListIds[column.status]);
   }
 
   protected readonly organizations = signal<OrganizationDto[]>([]);
@@ -362,10 +387,23 @@ export class DashboardPageComponent implements OnInit {
   }
 
   protected drop(event: CdkDragDrop<TaskDto[]>, nextStatus: TaskStatus): void {
+    if (event.previousContainer === event.container) {
+      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+      return;
+    }
+
+    transferArrayItem(
+      event.previousContainer.data,
+      event.container.data,
+      event.previousIndex,
+      event.currentIndex,
+    );
+
     const task = event.item.data as TaskDto;
     if (task.status === nextStatus) {
       return;
     }
+
     this.store.dispatch(
       TasksActions.updateTask({ taskId: task.id, changes: { status: nextStatus } }),
     );
