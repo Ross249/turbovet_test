@@ -40,37 +40,48 @@ import { AvatarModule } from 'primeng/avatar';
     AvatarModule,
   ],
   template: `
-    <main class="min-h-screen  flex items-center justify-center p-4">
-      <div class="w-full max-w-md">
-        <div class="text-center mb-8">
-          <h1 class="text-3xl font-bold text-surface-900 mb-2">
+    <main
+      style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:1rem;"
+    >
+      <div style="width:100%; max-width:28rem;">
+        <div style="text-align:center; margin-bottom:2rem;">
+          <h1
+            style="font-size:1.875rem; line-height:2.25rem; font-weight:700; color:rgb(17 24 39); margin-bottom:0.5rem;"
+          >
             TurboVets Task Console
           </h1>
-          <p class="text-sm text-surface-500">
+          <p
+            style="font-size:0.875rem; line-height:1.25rem; color:rgb(107 114 128);"
+          >
             Sign in with your RBAC-enabled account.
           </p>
         </div>
 
-        <p-card styleClass="rounded-lg shadow-lg p-8 border border-border">
+        <p-card
+          [style]="{
+            'border-radius': '0.5rem',
+            'box-shadow':
+              '0 10px 15px -3px rgba(0,0,0,0.1),0 4px 6px -4px rgba(0,0,0,0.1)',
+            padding: '2rem',
+            border: '1px solid rgb(229 231 235)'
+          }"
+        >
           <form
             [formGroup]="form"
             (ngSubmit)="onSubmit()"
-            class="flex flex-col gap-4"
+            style="display:flex; flex-direction:column; gap:1rem;"
           >
             <p-fluid>
-              <div class="flex flex-col gap-2">
+              <div style="display:flex; flex-direction:column; gap:0.5rem;">
                 <p-floatLabel>
                   <p-iconField iconPosition="left">
-                    <p-inputIcon>
-                      <i class="pi pi-envelope"></i>
-                    </p-inputIcon>
                     <input
                       pInputText
                       type="email"
                       id="login-email"
                       formControlName="email"
                       autocomplete="username"
-                      class="w-full"
+                      style="width:100%;"
                       [ngClass]="{
                         'p-invalid':
                           form.controls.email.invalid &&
@@ -84,25 +95,24 @@ import { AvatarModule } from 'primeng/avatar';
                   *ngIf="
                     form.controls.email.invalid && form.controls.email.touched
                   "
-                  class="text-xs text-red-500"
+                  style="font-size:0.75rem; line-height:1rem; color:rgb(239 68 68);"
                 >
                   Enter a valid email address.
                 </small>
               </div>
 
-              <div class="mt-2 flex flex-col gap-2">
+              <div
+                style="margin-top:1.2rem; display:flex; flex-direction:column; gap:0.5rem;"
+              >
                 <p-floatLabel>
                   <p-iconField iconPosition="left">
-                    <p-inputIcon>
-                      <i class="pi pi-lock"></i>
-                    </p-inputIcon>
                     <p-password
                       formControlName="password"
                       inputId="login-password"
                       [feedback]="false"
                       toggleMask
                       autocomplete="current-password"
-                      class="w-full"
+                      style="width:100%;"
                       [inputStyleClass]="
                         form.controls.password.invalid &&
                         form.controls.password.touched
@@ -118,7 +128,7 @@ import { AvatarModule } from 'primeng/avatar';
                     form.controls.password.invalid &&
                     form.controls.password.touched
                   "
-                  class="text-xs text-red-500"
+                  style="font-size:0.75rem; line-height:1rem; color:rgb(239 68 68);"
                 >
                   Password must be at least 8 characters long.
                 </small>
@@ -128,12 +138,11 @@ import { AvatarModule } from 'primeng/avatar';
             <button
               pButton
               type="button"
-              class="w-full"
+              style="width:100%;"
               [loading]="vm().status === 'authenticating'"
               [disabled]="vm().status === 'authenticating'"
               (click)="onSubmit()"
             >
-              <span class="pi pi-sign-in mr-2" aria-hidden="true"></span>
               <span class="p-button-label">Sign in</span>
             </button>
           </form>
@@ -142,25 +151,29 @@ import { AvatarModule } from 'primeng/avatar';
             *ngIf="vm().error"
             severity="error"
             [text]="vm().error!"
-            styleClass="mt-4"
+            [style]="{ 'margin-top': '1rem' }"
           ></p-message>
 
-          <p-divider align="center" type="dashed" styleClass="mt-6">
-            <span class="text-xs uppercase tracking-wide text-surface-500"
-              >Demo credentials</span
+          <p-divider align="center" type="dashed" style="margin-top:1.5rem;">
+            <span
+              style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; color:rgb(107 114 128);"
             >
+              Demo credentials
+            </span>
           </p-divider>
-          <ul class="mt-3 space-y-2 text-sm text-surface-600">
-            <li>
-              <span class="font-medium text-surface-900">Owner</span>:
+          <ul
+            style="margin-top:0.75rem; font-size:0.875rem; line-height:1.25rem; color:rgb(75 85 99);"
+          >
+            <li style="margin-bottom:0.5rem;">
+              <span style="font-weight:500; color:rgb(17 24 39);">Owner</span>:
               owner@turbovets.test / ChangeMe123!
             </li>
-            <li>
-              <span class="font-medium text-surface-900">Admin</span>:
+            <li style="margin-bottom:0.5rem;">
+              <span style="font-weight:500; color:rgb(17 24 39);">Admin</span>:
               admin@turbovets.test / ChangeMe123!
             </li>
             <li>
-              <span class="font-medium text-surface-900">Viewer</span>:
+              <span style="font-weight:500; color:rgb(17 24 39);">Viewer</span>:
               viewer@turbovets.test / ChangeMe123!
             </li>
           </ul>

@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 @import 'primeicons/primeicons.css';
+@import '@primeuix/themes/dist/aura';
 body {
   margin: 0;
   font-family: var(
