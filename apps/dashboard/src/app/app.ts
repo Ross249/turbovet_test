@@ -1,13 +1,18 @@
-import { Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { NxWelcome } from './nx-welcome';
+import { Component, inject } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { Store } from '@ngrx/store';
+import { AuthActions } from './state/auth/auth.actions';
 
 @Component({
-  imports: [NxWelcome, RouterModule],
+  standalone: true,
   selector: 'app-root',
-  templateUrl: './app.html',
-  styleUrl: './app.css',
+  imports: [RouterOutlet],
+  template: '<router-outlet></router-outlet>',
 })
-export class App {
-  protected title = 'dashboard';
+export class AppComponent {
+  private readonly store = inject(Store);
+
+  constructor() {
+    this.store.dispatch(AuthActions.restoreSession());
+  }
 }

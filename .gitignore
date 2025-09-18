@@ -44,3 +44,11 @@ Thumbs.db
 .github/instructions/nx.instructions.md
 
 .angular
+.env
+.env.*
+
+# API database files
+apps/api/data/*.sqlite
+apps/api/data/*.db
+
+AGENTS.md

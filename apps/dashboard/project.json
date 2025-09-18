@@ -8,11 +8,15 @@
   "targets": {
     "build": {
       "executor": "@angular/build:application",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
         "outputPath": "dist/apps/dashboard",
         "browser": "apps/dashboard/src/main.ts",
-        "polyfills": ["zone.js"],
+        "polyfills": [
+          "zone.js"
+        ],
         "tsConfig": "apps/dashboard/tsconfig.app.json",
         "assets": [
           {
@@ -20,7 +24,9 @@
             "input": "apps/dashboard/public"
           }
         ],
-        "styles": ["apps/dashboard/src/styles.css"],
+        "styles": [
+          "apps/dashboard/src/styles.css"
+        ],
         "server": "apps/dashboard/src/main.server.ts",
         "ssr": {
           "entry": "apps/dashboard/src/server.ts"
@@ -62,7 +68,13 @@
           "buildTarget": "dashboard:build:development"
         }
       },
-      "defaultConfiguration": "development"
+      "defaultConfiguration": "development",
+      "dependsOn": [
+        "api:serve"
+      ],
+      "options": {
+        "proxyConfig": "apps/dashboard/proxy.conf.json"
+      }
     },
     "extract-i18n": {
       "executor": "@angular/build:extract-i18n",
@@ -75,7 +87,9 @@
     },
     "test": {
       "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "outputs": [
+        "{workspaceRoot}/coverage/{projectRoot}"
+      ],
       "options": {
         "jestConfig": "apps/dashboard/jest.config.ts",
         "tsConfig": "apps/dashboard/tsconfig.spec.json"
