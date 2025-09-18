@@ -38,6 +38,23 @@ import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 import { merge, of } from 'rxjs';
 import { selectAllTasks } from '../../state/tasks/tasks.reducer';
 import { AuthActions } from '../../state/auth/auth.actions';
+import { ToolbarModule } from 'primeng/toolbar';
+import { ButtonModule } from 'primeng/button';
+import { AvatarModule } from 'primeng/avatar';
+import { BadgeModule } from 'primeng/badge';
+import { CardModule } from 'primeng/card';
+import { ChipModule } from 'primeng/chip';
+import { TagModule } from 'primeng/tag';
+import { TabsModule } from 'primeng/tabs';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { DialogModule } from 'primeng/dialog';
+import { FloatLabelModule } from 'primeng/floatlabel';
+import { TextareaModule } from 'primeng/textarea';
+import { DatePickerModule } from 'primeng/datepicker';
+import { MessageModule } from 'primeng/message';
+import { PanelModule } from 'primeng/panel';
+import { InputIconModule } from 'primeng/inputicon';
 
 @Component({
   standalone: true,
@@ -48,6 +65,23 @@ import { AuthActions } from '../../state/auth/auth.actions';
     DragDropModule,
     CdkDropList,
     CdkDrag,
+    ToolbarModule,
+    ButtonModule,
+    AvatarModule,
+    BadgeModule,
+    CardModule,
+    ChipModule,
+    TagModule,
+    TabsModule,
+    InputTextModule,
+    SelectModule,
+    DialogModule,
+    FloatLabelModule,
+    TextareaModule,
+    DatePickerModule,
+    MessageModule,
+    PanelModule,
+    InputIconModule,
   ],
   templateUrl: './dashboard-page.component.html',
   styleUrls: ['./dashboard-page.component.css'],
@@ -97,6 +131,11 @@ export class DashboardPageComponent implements OnInit {
     { initialValue: [] as string[] },
   );
 
+  protected readonly categoryFilterOptions = computed(() => [
+    { label: 'All Categories', value: '' },
+    ...this.categories().map((category) => ({ label: category, value: category })),
+  ]);
+
   protected readonly activeTab = signal<'tasks' | 'audit'>('tasks');
   protected readonly auditEntries = signal<AuditLogEntry[]>([]);
   protected readonly auditLoading = signal(false);
@@ -129,15 +168,15 @@ export class DashboardPageComponent implements OnInit {
     },
   ];
 
-  protected readonly createForm = this.fb.nonNullable.group({
-    title: ['', [Validators.required, Validators.maxLength(120)]],
-    description: [''],
-    category: [''],
-    status: [TaskStatus.Backlog as TaskStatus, Validators.required],
-    priority: [TaskPriority.Medium as TaskPriority, Validators.required],
-    organizationId: ['', Validators.required],
-    assigneeId: [''],
-    dueDate: [''],
+  protected readonly createForm = this.fb.group({
+    title: this.fb.nonNullable.control('', [Validators.required, Validators.maxLength(120)]),
+    description: this.fb.control(''),
+    category: this.fb.control(''),
+    status: this.fb.nonNullable.control<TaskStatus>(TaskStatus.Backlog, Validators.required),
+    priority: this.fb.nonNullable.control<TaskPriority>(TaskPriority.Medium, Validators.required),
+    organizationId: this.fb.nonNullable.control('', Validators.required),
+    assigneeId: this.fb.control(''),
+    dueDate: this.fb.control<Date | null>(null),
   });
 
   protected readonly filterForm = this.fb.nonNullable.group({
@@ -164,7 +203,7 @@ export class DashboardPageComponent implements OnInit {
     () => this.user()?.organizationPath || 'TurboVets',
   );
 
-  protected readonly statusOptions = [
+  protected readonly statusFilterOptions = [
     { label: 'All Status', value: '' },
     { label: 'To Do', value: TaskStatus.Backlog },
     { label: 'In Progress', value: TaskStatus.InProgress },
@@ -172,37 +211,43 @@ export class DashboardPageComponent implements OnInit {
     { label: 'Completed', value: TaskStatus.Completed },
   ];
 
-  protected readonly priorityOptions = [
+  protected readonly priorityFilterOptions = [
     { label: 'All Priority', value: '' },
     { label: 'High', value: TaskPriority.High },
     { label: 'Medium', value: TaskPriority.Medium },
     { label: 'Low', value: TaskPriority.Low },
   ];
 
-  protected readonly auditActionMeta: Record<AuditAction, { label: string; chipClass: string }> = {
+  protected readonly prioritySelectOptions = [
+    { label: 'High', value: TaskPriority.High },
+    { label: 'Medium', value: TaskPriority.Medium },
+    { label: 'Low', value: TaskPriority.Low },
+  ];
+
+  protected readonly auditActionMeta: Record<AuditAction, { label: string; severity: 'success' | 'info' | 'warning' | 'danger' }> = {
     [AuditAction.TaskCreate]: {
       label: 'Created task',
-      chipClass: 'bg-primary-100 text-primary-700',
+      severity: 'success',
     },
     [AuditAction.TaskUpdate]: {
       label: 'Updated task',
-      chipClass: 'bg-amber-100 text-amber-700',
+      severity: 'info',
     },
     [AuditAction.TaskDelete]: {
       label: 'Deleted task',
-      chipClass: 'bg-rose-100 text-rose-700',
+      severity: 'danger',
     },
     [AuditAction.TaskView]: {
       label: 'Viewed task',
-      chipClass: 'bg-slate-100 text-slate-700',
+      severity: 'info',
     },
     [AuditAction.Login]: {
       label: 'Login',
-      chipClass: 'bg-emerald-100 text-emerald-700',
+      severity: 'success',
     },
     [AuditAction.Logout]: {
       label: 'Logout',
-      chipClass: 'bg-slate-100 text-slate-700',
+      severity: 'info',
     },
   };
 
@@ -266,7 +311,7 @@ export class DashboardPageComponent implements OnInit {
       priority: TaskPriority.Medium,
       organizationId: this.organizations().at(0)?.id ?? '',
       assigneeId: '',
-      dueDate: '',
+      dueDate: null,
     });
   }
 
@@ -284,7 +329,10 @@ export class DashboardPageComponent implements OnInit {
       priority: values.priority,
       organizationId: values.organizationId,
       assigneeId: values.assigneeId || undefined,
-      dueDate: values.dueDate || undefined,
+      dueDate:
+        values.dueDate instanceof Date
+          ? values.dueDate.toISOString()
+          : values.dueDate || undefined,
     };
     this.store.dispatch(TasksActions.createTask({ request }));
     this.closeCreateDialog();
@@ -304,12 +352,16 @@ export class DashboardPageComponent implements OnInit {
     this.store.dispatch(AuthActions.logout());
   }
 
-  protected switchTab(tab: 'tasks' | 'audit'): void {
-    if (this.activeTab() === tab) {
+  protected switchTab(tab: 'tasks' | 'audit' | string | number): void {
+    const next = tab === 'audit' ? 'audit' : tab === 'tasks' ? 'tasks' : undefined;
+    if (!next) {
       return;
     }
-    this.activeTab.set(tab);
-    if (tab === 'audit' && !this.auditEntries().length) {
+    if (this.activeTab() === next) {
+      return;
+    }
+    this.activeTab.set(next);
+    if (next === 'audit' && !this.auditEntries().length) {
       this.loadAuditLog();
     }
   }
@@ -318,12 +370,25 @@ export class DashboardPageComponent implements OnInit {
     return this.auditActionMeta[entry.action]?.label ?? 'Activity';
   }
 
-  protected auditChipClass(entry: AuditLogEntry): string {
-    return this.auditActionMeta[entry.action]?.chipClass ?? 'bg-slate-100 text-slate-700';
+  protected auditSeverity(entry: AuditLogEntry): 'success' | 'info' | 'warning' | 'danger' {
+    return this.auditActionMeta[entry.action]?.severity ?? 'info';
   }
 
   protected actorInitials(entry: AuditLogEntry): string {
     return entry.actorId.slice(0, 2).toUpperCase();
+  }
+
+  protected prioritySeverity(priority: TaskPriority): 'success' | 'info' | 'warning' | 'danger' {
+    switch (priority) {
+      case TaskPriority.Low:
+        return 'success';
+      case TaskPriority.Medium:
+        return 'warning';
+      case TaskPriority.High:
+        return 'danger';
+      default:
+        return 'info';
+    }
   }
 
   protected formatTimestamp(timestamp: string): string {

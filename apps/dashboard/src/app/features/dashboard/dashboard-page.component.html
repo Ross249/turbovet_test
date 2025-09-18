@@ -1,389 +1,367 @@
-<div class="min-h-screen bg-gradient-to-b from-sky-50 via-white to-white px-4 py-10 text-slate-900 sm:px-6 lg:px-8">
-  <main class="mx-auto flex w-full max-w-7xl flex-col gap-10">
-    <!-- Top Bar -->
-    <header class="flex flex-col gap-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm shadow-slate-200/60 md:flex-row md:items-center md:justify-between">
-      <div class="flex items-center gap-4">
-        <span class="flex h-12 w-12 items-center justify-center rounded-full bg-primary-600 text-lg font-semibold text-white">
-          {{ brandInitials() }}
-        </span>
-        <div>
-          <h1 class="text-2xl font-semibold text-slate-900">Task Manager</h1>
-          <p class="text-sm text-slate-500">{{ organizationLabel() }}</p>
-        </div>
-      </div>
-      <div class="flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          (click)="openCreateDialog()"
-          class="flex items-center gap-2 rounded-full bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-primary-500/30 transition hover:bg-primary-500"
-        >
-          <span class="text-lg leading-none">＋</span>
-          New Task
-        </button>
-        <button
-          type="button"
-          aria-label="Notifications"
-          class="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:text-primary-600"
-        >
-          🔔
-        </button>
-        <button
-          type="button"
-          (click)="logout()"
-          class="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:text-primary-600"
-        >
-          ⤴
-        </button>
-      </div>
-    </header>
-
-    <!-- Summary Cards -->
-    <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-      <article class="flex flex-col gap-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div class="flex items-center justify-between text-slate-500">
-          <span class="text-sm font-medium">Total Tasks</span>
-          ⏰
-        </div>
-        <div>
-          <p class="text-4xl font-semibold text-slate-900">{{ summary().total }}</p>
-          <p class="mt-1 text-sm text-slate-500">Active tasks in system</p>
-        </div>
-      </article>
-      <article class="flex flex-col gap-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div class="flex items-center justify-between text-slate-500">
-          <span class="text-sm font-medium">Completed</span>
-          ✅
-        </div>
-        <div>
-          <p class="text-4xl font-semibold text-slate-900">{{ summary().completed }}</p>
-          <p class="mt-1 text-sm text-slate-500">Tasks completed this week</p>
-        </div>
-      </article>
-      <article class="flex flex-col gap-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div class="flex items-center justify-between text-slate-500">
-          <span class="text-sm font-medium">High Priority</span>
-          ⚠️
-        </div>
-        <div>
-          <p class="text-4xl font-semibold text-slate-900">{{ summary().highPriority }}</p>
-          <p class="mt-1 text-sm text-slate-500">Urgent tasks needing attention</p>
-        </div>
-      </article>
-      <article class="flex flex-col gap-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div class="flex items-center justify-between text-slate-500">
-          <span class="text-sm font-medium">Team Members</span>
-          👥
-        </div>
-        <div>
-          <p class="text-4xl font-semibold text-slate-900">{{ summary().contributors }}</p>
-          <p class="mt-1 text-sm text-slate-500">Contributors across all tasks</p>
-        </div>
-      </article>
-    </section>
-
-    <!-- Tabs -->
-    <nav class="flex w-full rounded-full border border-slate-200 bg-slate-100 p-1 text-sm font-medium text-slate-500">
-      <button
-        type="button"
-        (click)="switchTab('tasks')"
-        class="flex-1 rounded-full px-4 py-2 transition"
-        [ngClass]="{
-          'bg-white text-slate-900 shadow-sm': activeTab() === 'tasks',
-          'hover:text-slate-700': activeTab() !== 'tasks'
-        }"
-      >
-        Task Management
-      </button>
-      <button
-        type="button"
-        (click)="switchTab('audit')"
-        class="flex-1 rounded-full px-4 py-2 transition"
-        [ngClass]="{
-          'bg-white text-slate-900 shadow-sm': activeTab() === 'audit',
-          'hover:text-slate-700': activeTab() !== 'audit'
-        }"
-      >
-        Audit Log
-      </button>
-    </nav>
-
-    <!-- Filter Bar (Tasks only) -->
-    <section
-      *ngIf="activeTab() === 'tasks'"
-      class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
-    >
-      <form [formGroup]="filterForm" class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div class="flex w-full flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
-          <div class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2">
-            🔍
-            <input
-              formControlName="search"
-              type="search"
-              placeholder="Search tasks"
-              class="w-full border-0 bg-transparent text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none"
-            />
-          </div>
-          <div class="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <label class="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-600">
-              <span>Status</span>
-              <select
-                formControlName="status"
-                class="w-36 border-0 bg-transparent text-sm text-slate-800 focus:outline-none"
-              >
-                <option *ngFor="let option of statusOptions" [value]="option.value">{{ option.label }}</option>
-              </select>
-            </label>
-            <label class="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-600">
-              <span>Priority</span>
-              <select
-                formControlName="priority"
-                class="w-36 border-0 bg-transparent text-sm text-slate-800 focus:outline-none"
-              >
-                <option *ngFor="let option of priorityOptions" [value]="option.value">{{ option.label }}</option>
-              </select>
-            </label>
-            <label class="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-600">
-              <span>Category</span>
-              <select
-                formControlName="category"
-                class="w-36 border-0 bg-transparent text-sm text-slate-800 focus:outline-none"
-              >
-                <option value="">All Categories</option>
-                <option *ngFor="let category of categories()" [value]="category">{{ category }}</option>
-              </select>
-            </label>
-          </div>
-        </div>
+<div class="surface-ground min-h-screen px-4 py-6 sm:px-6 lg:px-8">
+  <main class="mx-auto flex w-full max-w-7xl flex-col gap-6">
+    <p-toolbar styleClass="surface-card border-round-3xl shadow-2 px-5 py-4">
+      <ng-template pTemplate="start">
         <div class="flex items-center gap-3">
-          <button type="button" class="flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm text-slate-600 transition hover:border-slate-300 hover:text-slate-800">
-            📊
-            Sort
+          <p-avatar
+            shape="circle"
+            [label]="brandInitials()"
+            styleClass="bg-primary text-white font-semibold text-base"
+          ></p-avatar>
+          <div class="flex flex-col">
+            <span class="text-xl font-semibold text-surface-900">Task Manager</span>
+            <small class="text-sm text-surface-600">{{ organizationLabel() }}</small>
+          </div>
+        </div>
+      </ng-template>
+      <ng-template pTemplate="end">
+        <div class="flex flex-wrap items-center justify-end gap-2">
+          <button
+            pButton
+            type="button"
+            icon="pi pi-plus"
+            rounded
+            (click)="openCreateDialog()"
+          >
+            New Task
           </button>
-          <button type="button" class="flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm text-slate-600 transition hover:border-slate-300 hover:text-slate-800">
-            🔽
-            Filters
+          <button
+            pButton
+            type="button"
+            icon="pi pi-bell"
+            severity="secondary"
+            rounded
+            aria-label="Notifications"
+          >
+            <span class="sr-only">Notifications</span>
+          </button>
+          <button
+            pButton
+            type="button"
+            icon="pi pi-sign-out"
+            severity="secondary"
+            rounded
+            (click)="logout()"
+            aria-label="Logout"
+          >
+            <span class="sr-only">Logout</span>
           </button>
         </div>
-      </form>
-    </section>
+      </ng-template>
+    </p-toolbar>
 
-    <!-- Task Board -->
-    <section *ngIf="activeTab() === 'tasks'" class="space-y-6">
-      <div
-        *ngIf="loading()"
-        class="flex items-center gap-2 rounded-2xl border border-primary-200 bg-primary-50 px-4 py-2 text-sm text-primary-700"
-      >
-        ⟳
-        Synchronizing latest tasks…
-      </div>
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-        <div
-          *ngFor="let column of statusColumns"
-          cdkDropList
-          [cdkDropListData]="tasksByStatus()[column.status]"
-          (cdkDropListDropped)="drop($event, column.status)"
-          class="flex h-full flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm"
-        >
-          <header class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 class="text-lg font-semibold text-slate-900">{{ column.title }}</h2>
-              <p class="text-xs text-slate-500">{{ column.description }}</p>
-            </div>
-            <span class="inline-flex items-center justify-center rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">
-              {{ tasksByStatus()[column.status].length || 0 }}
-            </span>
-          </header>
-          <div class="flex flex-1 flex-col gap-3">
-            <article
-              *ngFor="let task of tasksByStatus()[column.status]"
-              cdkDrag
-              [cdkDragData]="task"
-              class="group flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-primary-300 hover:shadow-primary-200/40"
-            >
-              <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <h3 class="text-base font-semibold text-slate-900">{{ task.title }}</h3>
-                <span
-                  class="inline-flex items-center justify-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
-                  [ngClass]="{
-                    'bg-emerald-100 text-emerald-700': task.priority === TaskPriority.Low,
-                    'bg-amber-100 text-amber-700': task.priority === TaskPriority.Medium,
-                    'bg-rose-100 text-rose-700': task.priority === TaskPriority.High,
-                  }"
-                >
-                  {{ task.priority }}
-                </span>
-              </div>
-              <p class="text-sm text-slate-600">
-                {{ task.description || 'No description supplied.' }}
-              </p>
-              <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                <span class="rounded-full bg-slate-100 px-2 py-1 text-slate-600">{{ task.category }}</span>
-                <span class="rounded-full bg-slate-100 px-2 py-1 text-slate-600">Org: {{ task.organizationId | slice:0:8 }}</span>
-                <span class="rounded-full bg-slate-100 px-2 py-1 text-slate-600">Owner: {{ task.createdById | slice:0:8 }}</span>
-                <span *ngIf="task.dueDate" class="rounded-full bg-slate-100 px-2 py-1 text-slate-600">
-                  Due {{ task.dueDate | date: 'MMM d' }}
-                </span>
-              </div>
-            </article>
-            <p
-              *ngIf="tasksByStatus()[column.status].length === 0"
-              class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-3 py-6 text-center text-xs text-slate-500"
-            >
-              No tasks in this lane.
-            </p>
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <p-card styleClass="border-none surface-card border-round-3xl shadow-1">
+        <ng-template pTemplate="header">
+          <div class="flex items-center justify-between text-surface-500">
+            <span class="text-sm font-medium">Total Tasks</span>
+            <i class="pi pi-clock text-lg"></i>
           </div>
+        </ng-template>
+        <div class="mt-3">
+          <span class="text-4xl font-semibold text-surface-900">{{ summary().total }}</span>
+          <p class="mt-1 text-sm text-surface-600">Active tasks in system</p>
         </div>
-      </div>
-    </section>
+      </p-card>
+      <p-card styleClass="border-none surface-card border-round-3xl shadow-1">
+        <ng-template pTemplate="header">
+          <div class="flex items-center justify-between text-surface-500">
+            <span class="text-sm font-medium">Completed</span>
+            <i class="pi pi-check-circle text-lg"></i>
+          </div>
+        </ng-template>
+        <div class="mt-3">
+          <span class="text-4xl font-semibold text-surface-900">{{ summary().completed }}</span>
+          <p class="mt-1 text-sm text-surface-600">Tasks completed this week</p>
+        </div>
+      </p-card>
+      <p-card styleClass="border-none surface-card border-round-3xl shadow-1">
+        <ng-template pTemplate="header">
+          <div class="flex items-center justify-between text-surface-500">
+            <span class="text-sm font-medium">High Priority</span>
+            <i class="pi pi-exclamation-triangle text-lg"></i>
+          </div>
+        </ng-template>
+        <div class="mt-3">
+          <span class="text-4xl font-semibold text-surface-900">{{ summary().highPriority }}</span>
+          <p class="mt-1 text-sm text-surface-600">Urgent tasks needing attention</p>
+        </div>
+      </p-card>
+      <p-card styleClass="border-none surface-card border-round-3xl shadow-1">
+        <ng-template pTemplate="header">
+          <div class="flex items-center justify-between text-surface-500">
+            <span class="text-sm font-medium">Team Members</span>
+            <i class="pi pi-users text-lg"></i>
+          </div>
+        </ng-template>
+        <div class="mt-3">
+          <span class="text-4xl font-semibold text-surface-900">{{ summary().contributors }}</span>
+          <p class="mt-1 text-sm text-surface-600">Contributors across all tasks</p>
+        </div>
+      </p-card>
+    </div>
 
-    <!-- Audit Log -->
-    <section *ngIf="activeTab() === 'audit'" class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <header class="mb-4 flex items-center justify-between">
-        <div class="flex items-center gap-3 text-slate-700">
-          📋
-          <h2 class="text-lg font-semibold text-slate-900">Audit Log</h2>
-        </div>
-      </header>
-      <div *ngIf="auditLoading()" class="flex items-center gap-2 rounded-2xl border border-primary-200 bg-primary-50 px-4 py-2 text-sm text-primary-700">
-        ⟳
-        Loading recent activity…
-      </div>
-      <p *ngIf="auditError()" class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700">
-        {{ auditError() }}
-      </p>
-      <ul *ngIf="!auditLoading()" class="flex flex-col gap-3">
-        <li
-          *ngFor="let entry of auditEntries()"
-          class="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 md:flex-row md:items-center md:gap-4"
-        >
-          <div class="flex items-center gap-3 md:w-1/3">
-            <span class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 text-sm font-semibold text-slate-700">
-              {{ actorInitials(entry) }}
-            </span>
-            <div class="flex flex-col">
-              <span class="font-medium text-slate-900">{{ auditLabel(entry) }}</span>
-              <span class="text-xs text-slate-500">{{ entry.resourceType }} · {{ entry.resourceId | slice:0:8 }}</span>
+    <p-tabs
+      [value]="activeTab()"
+      (valueChange)="switchTab($event)"
+      styleClass="surface-card border-round-3xl shadow-2 overflow-hidden"
+    >
+      <p-tablist>
+        <p-tab value="tasks">Task Management</p-tab>
+        <p-tab value="audit">Audit Log</p-tab>
+      </p-tablist>
+      <p-tabpanels>
+        <p-tabpanel value="tasks">
+          <div class="flex flex-col gap-4">
+            <form
+              [formGroup]="filterForm"
+              class="grid gap-3 rounded-3xl border border-surface-200 bg-surface-0 p-5 md:grid-cols-2 xl:grid-cols-5"
+            >
+              <span class="p-input-icon-left md:col-span-2 xl:col-span-2">
+                <i class="pi pi-search"></i>
+                <input
+                  pInputText
+                  formControlName="search"
+                  type="search"
+                  placeholder="Search tasks"
+                  class="w-full"
+                />
+              </span>
+              <p-select
+                formControlName="status"
+                [options]="statusFilterOptions"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="All status"
+                class="w-full"
+              ></p-select>
+              <p-select
+                formControlName="priority"
+                [options]="priorityFilterOptions"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="All priority"
+                class="w-full"
+              ></p-select>
+              <p-select
+                formControlName="category"
+                [options]="categoryFilterOptions()"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="All categories"
+                class="w-full"
+              ></p-select>
+              <div class="flex items-center justify-end gap-2 md:col-span-2 xl:col-span-1">
+                <button pButton type="button" icon="pi pi-sort" severity="secondary">
+                  Sort
+                </button>
+                <button pButton type="button" icon="pi pi-sliders-h" severity="secondary">
+                  Filters
+                </button>
+              </div>
+            </form>
+
+            <p-message
+              *ngIf="loading()"
+              severity="info"
+              text="Synchronizing latest tasks…"
+              styleClass="border-round-2xl"
+            ></p-message>
+
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 2xl:grid-cols-4">
+              <div *ngFor="let column of statusColumns" class="flex flex-col gap-3">
+                <p-panel styleClass="h-full border-round-3xl surface-section shadow-2">
+                  <ng-template pTemplate="header">
+                    <div class="flex items-center justify-between gap-3">
+                      <div>
+                        <span class="text-base font-semibold text-surface-900">{{ column.title }}</span>
+                        <p class="m-0 text-xs text-surface-500">{{ column.description }}</p>
+                      </div>
+                      <p-badge
+                        [value]="tasksByStatus()[column.status].length || 0"
+                        severity="info"
+                      ></p-badge>
+                    </div>
+                  </ng-template>
+                  <ng-template pTemplate="content">
+                    <div
+                      cdkDropList
+                      [cdkDropListData]="tasksByStatus()[column.status]"
+                      (cdkDropListDropped)="drop($event, column.status)"
+                      class="flex flex-col gap-3"
+                    >
+                      <p-card
+                        *ngFor="let task of tasksByStatus()[column.status]"
+                        cdkDrag
+                        [cdkDragData]="task"
+                        styleClass="border-round-2xl shadow-1 cursor-grab transition-shadow hover:shadow-3"
+                      >
+                        <div class="flex items-start justify-between gap-3">
+                          <div class="flex flex-col gap-2">
+                            <span class="text-base font-semibold text-surface-900">{{ task.title }}</span>
+                            <p class="m-0 text-sm text-surface-600">
+                              {{ task.description || 'No description supplied.' }}
+                            </p>
+                          </div>
+                          <p-tag
+                            [value]="task.priority"
+                            [severity]="prioritySeverity(task.priority)"
+                            rounded
+                            size="small"
+                          ></p-tag>
+                        </div>
+                        <div class="mt-3 flex flex-wrap gap-2 text-xs">
+                          <p-chip [label]="task.category || 'General'" icon="pi pi-folder"></p-chip>
+                          <p-chip [label]="'Org: ' + (task.organizationId | slice:0:8)" icon="pi pi-sitemap"></p-chip>
+                          <p-chip [label]="'Owner: ' + (task.createdById | slice:0:8)" icon="pi pi-user"></p-chip>
+                          <p-chip
+                            *ngIf="task.dueDate"
+                            [label]="'Due ' + (task.dueDate | date: 'MMM d')"
+                            icon="pi pi-calendar"
+                          ></p-chip>
+                        </div>
+                      </p-card>
+                      <div
+                        *ngIf="tasksByStatus()[column.status].length === 0"
+                        class="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-surface-200 border-round-2xl py-6 text-sm text-surface-500"
+                      >
+                        <i class="pi pi-inbox text-lg"></i>
+                        <span>No tasks in this lane.</span>
+                      </div>
+                    </div>
+                  </ng-template>
+                </p-panel>
+              </div>
             </div>
           </div>
-          <div class="flex-1 text-xs text-slate-500">
-            <span *ngIf="auditMetadata(entry) as metaText">{{ metaText }}</span>
+        </p-tabpanel>
+        <p-tabpanel value="audit">
+          <div class="flex flex-col gap-4">
+            <p-message *ngIf="auditLoading()" severity="info" text="Loading recent activity…"></p-message>
+            <p-message *ngIf="auditError()" severity="error" [text]="auditError()!"></p-message>
+            <div *ngIf="!auditLoading()" class="flex flex-col gap-3">
+              <p-card *ngFor="let entry of auditEntries()" styleClass="border-round-2xl shadow-1">
+                <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div class="flex items-center gap-3">
+                    <p-avatar
+                      shape="circle"
+                      [label]="actorInitials(entry)"
+                      styleClass="bg-surface-900 text-white"
+                    ></p-avatar>
+                    <div class="flex flex-col">
+                      <span class="font-medium text-surface-900">{{ auditLabel(entry) }}</span>
+                      <small class="text-surface-500">{{ entry.resourceType }} · {{ entry.resourceId | slice:0:8 }}</small>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <p-tag [value]="auditLabel(entry)" [severity]="auditSeverity(entry)"></p-tag>
+                    <small class="text-surface-500">{{ formatTimestamp(entry.createdAt) }}</small>
+                  </div>
+                </div>
+                <p *ngIf="auditMetadata(entry) as metaText" class="m-0 text-sm text-surface-600">
+                  {{ metaText }}
+                </p>
+              </p-card>
+              <div
+                *ngIf="!auditEntries().length && !auditError()"
+                class="flex flex-col items-center gap-2 border-2 border-dashed border-surface-200 border-round-2xl py-6 text-sm text-surface-500"
+              >
+                <i class="pi pi-ellipsis-h text-lg"></i>
+                <span>No audit activity recorded yet.</span>
+              </div>
+            </div>
           </div>
-          <div class="flex items-center gap-3">
-            <span class="rounded-full px-3 py-1 text-xs font-medium" [ngClass]="auditChipClass(entry)">
-              {{ auditLabel(entry) }}
-            </span>
-            <span class="text-xs text-slate-400">{{ formatTimestamp(entry.createdAt) }}</span>
-          </div>
-        </li>
-        <li *ngIf="!auditEntries().length && !auditError()" class="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-6 text-center text-sm text-slate-500">
-          No audit activity recorded yet.
-        </li>
-      </ul>
-    </section>
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
   </main>
 
-  <!-- Create Task Dialog -->
-  <div
-    *ngIf="isCreateDialogOpen()"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/20 backdrop-blur"
+  <p-dialog
+    header="Create new task"
+    [visible]="isCreateDialogOpen()"
+    (onHide)="closeCreateDialog()"
+    [modal]="true"
+    styleClass="w-full max-w-2xl"
   >
-    <div class="w-full max-w-xl rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl shadow-slate-200/80">
-      <div class="mb-4 flex items-center justify-between">
-        <h2 class="text-lg font-semibold text-slate-900">Create new task</h2>
-        <button type="button" (click)="closeCreateDialog()" class="text-slate-500 transition hover:text-primary-600">✕</button>
+    <form [formGroup]="createForm" (ngSubmit)="createTask()" class="grid gap-4 md:grid-cols-2">
+      <div class="md:col-span-2">
+        <span class="p-float-label">
+          <input pInputText id="task-title" formControlName="title" class="w-full" />
+          <label for="task-title">Title</label>
+        </span>
       </div>
-      <form [formGroup]="createForm" (ngSubmit)="createTask()" class="grid gap-4">
-        <div>
-          <label for="task-title" class="text-xs font-semibold uppercase tracking-wide text-slate-600">Title</label>
-          <input
-            type="text"
-            formControlName="title"
-            id="task-title"
-            placeholder="Describe the task goal"
-            class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-400/40"
-          />
-        </div>
-        <div>
-          <label for="task-description" class="text-xs font-semibold uppercase tracking-wide text-slate-600">Description</label>
+      <div class="md:col-span-2">
+        <span class="p-float-label">
           <textarea
+            pTextarea
+            autoResize
             rows="3"
-            formControlName="description"
             id="task-description"
-            class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-400/40"
+            formControlName="description"
+            class="w-full"
           ></textarea>
-        </div>
-        <div class="grid gap-4 md:grid-cols-2">
-          <div>
-            <label for="task-category" class="text-xs font-semibold uppercase tracking-wide text-slate-600">Category</label>
-            <input
-              type="text"
-              formControlName="category"
-              id="task-category"
-              placeholder="Operations, Research…"
-              class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-400/40"
-            />
-          </div>
-          <div>
-            <label for="task-organization" class="text-xs font-semibold uppercase tracking-wide text-slate-600">Organization</label>
-            <select
-              formControlName="organizationId"
-              id="task-organization"
-              class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-400/40"
-            >
-              <option *ngFor="let org of organizations()" [value]="org.id">{{ org.name }}</option>
-            </select>
-          </div>
-        </div>
-        <div class="grid gap-4 md:grid-cols-3">
-          <div>
-            <label for="task-status" class="text-xs font-semibold uppercase tracking-wide text-slate-600">Status</label>
-            <select
-              formControlName="status"
-              id="task-status"
-              class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-400/40"
-            >
-              <option *ngFor="let column of statusColumns" [value]="column.status">{{ column.title }}</option>
-            </select>
-          </div>
-          <div>
-            <label for="task-priority" class="text-xs font-semibold uppercase tracking-wide text-slate-600">Priority</label>
-            <select
-              formControlName="priority"
-              id="task-priority"
-              class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-400/40"
-            >
-              <option [value]="TaskPriority.Low">Low</option>
-              <option [value]="TaskPriority.Medium">Medium</option>
-              <option [value]="TaskPriority.High">High</option>
-            </select>
-          </div>
-          <div>
-            <label for="task-due-date" class="text-xs font-semibold uppercase tracking-wide text-slate-600">Due date</label>
-            <input
-              type="date"
-              formControlName="dueDate"
-              id="task-due-date"
-              class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-400/40"
-            />
-          </div>
-        </div>
-        <div class="grid gap-4 md:grid-cols-2">
-          <div>
-            <label for="task-assignee" class="text-xs font-semibold uppercase tracking-wide text-slate-600">Assign to (optional)</label>
-            <input
-              type="text"
-              formControlName="assigneeId"
-              id="task-assignee"
-              placeholder="User UUID"
-              class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-400/40"
-            />
-          </div>
-        </div>
-        <div class="flex items-center justify-end gap-3 pt-2">
-          <button type="button" (click)="closeCreateDialog()" class="rounded-full border border-slate-200 px-4 py-2 text-sm text-slate-600 transition hover:border-slate-300 hover:text-slate-800">Cancel</button>
-          <button type="submit" class="rounded-full bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-primary-500/30 transition hover:bg-primary-500">Create task</button>
-        </div>
-      </form>
-    </div>
-  </div>
+          <label for="task-description">Description</label>
+        </span>
+      </div>
+      <div>
+        <span class="p-float-label">
+          <input pInputText id="task-category" formControlName="category" class="w-full" />
+          <label for="task-category">Category</label>
+        </span>
+      </div>
+      <div>
+        <p-select
+          formControlName="organizationId"
+          [options]="organizations()"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Select organization"
+          class="w-full"
+        ></p-select>
+      </div>
+      <div>
+        <p-select
+          formControlName="status"
+          [options]="statusColumns"
+          optionLabel="title"
+          optionValue="status"
+          placeholder="Select status"
+          class="w-full"
+        ></p-select>
+      </div>
+      <div>
+        <p-select
+          formControlName="priority"
+          [options]="prioritySelectOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Select priority"
+          class="w-full"
+        ></p-select>
+      </div>
+      <div>
+        <p-datepicker
+          formControlName="dueDate"
+          inputId="task-due-date"
+          dateFormat="yy-mm-dd"
+          showIcon
+          class="w-full"
+        ></p-datepicker>
+      </div>
+      <div>
+        <span class="p-float-label">
+          <input pInputText id="task-assignee" formControlName="assigneeId" class="w-full" />
+          <label for="task-assignee">Assign to (optional)</label>
+        </span>
+      </div>
+      <div class="md:col-span-2 flex justify-end gap-2 pt-2">
+        <button pButton type="button" severity="secondary" (click)="closeCreateDialog()">
+          Cancel
+        </button>
+        <button pButton type="submit" icon="pi pi-save" [disabled]="createForm.invalid">
+          Create task
+        </button>
+      </div>
+    </form>
+  </p-dialog>
 </div>

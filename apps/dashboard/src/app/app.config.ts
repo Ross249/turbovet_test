@@ -23,6 +23,8 @@ import { TasksEffects } from './state/tasks/tasks.effects';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { authTokenInterceptor } from './core/interceptors/auth-token.interceptor';
+import { providePrimeNG } from 'primeng/config';
+import Aura from '@primeuix/themes/aura';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -35,5 +37,10 @@ export const appConfig: ApplicationConfig = {
     provideEffects([AuthEffects, TasksEffects]),
     provideStoreDevtools(),
     provideAnimationsAsync(),
+    providePrimeNG({
+      theme: {
+        preset: Aura,
+      },
+    }),
   ],
 };

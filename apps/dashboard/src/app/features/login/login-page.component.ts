@@ -9,65 +9,164 @@ import {
 } from '../../state/auth/auth.selectors';
 import { combineLatest } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { CardModule } from 'primeng/card';
+import { InputTextModule } from 'primeng/inputtext';
+import { PasswordModule } from 'primeng/password';
+import { ButtonModule } from 'primeng/button';
+import { MessageModule } from 'primeng/message';
+import { DividerModule } from 'primeng/divider';
+import { FloatLabelModule } from 'primeng/floatlabel';
+import { InputIconModule } from 'primeng/inputicon';
+import { IconFieldModule } from 'primeng/iconfield';
+import { FluidModule } from 'primeng/fluid';
+import { AvatarModule } from 'primeng/avatar';
 
 @Component({
   standalone: true,
   selector: 'app-login-page',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    CardModule,
+    InputTextModule,
+    PasswordModule,
+    ButtonModule,
+    MessageModule,
+    DividerModule,
+    FloatLabelModule,
+    InputIconModule,
+    IconFieldModule,
+    FluidModule,
+    AvatarModule,
+  ],
   template: `
-    <div class="flex min-h-screen items-center justify-center bg-gradient-to-b from-sky-50 via-white to-white px-4 py-12">
-      <div class="w-full max-w-md rounded-2xl border border-sky-100 bg-white p-8 shadow-xl shadow-sky-100/80">
-        <div class="mb-8 text-center">
-          <h1 class="text-2xl font-semibold text-slate-900">TurboVets Task Console</h1>
-          <p class="mt-2 text-sm text-slate-600">Sign in with your RBAC-enabled account.</p>
+    <main class="min-h-screen  flex items-center justify-center p-4">
+      <div class="w-full max-w-md">
+        <div class="text-center mb-8">
+          <h1 class="text-3xl font-bold text-surface-900 mb-2">
+            TurboVets Task Console
+          </h1>
+          <p class="text-sm text-surface-500">
+            Sign in with your RBAC-enabled account.
+          </p>
         </div>
-        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6">
-          <div>
-            <label for="login-email" class="block text-sm font-medium text-slate-600">Email</label>
-            <input
-              type="email"
-              formControlName="email"
-              id="login-email"
-              class="mt-2 w-full rounded-lg border border-sky-200 bg-white px-4 py-2 text-slate-900 focus:border-primary-400 focus:ring-primary-400"
-              placeholder="you@turbovets.test"
-              autocomplete="username"
-            />
-          </div>
-          <div>
-            <label for="login-password" class="block text-sm font-medium text-slate-600">Password</label>
-            <input
-              type="password"
-              formControlName="password"
-              id="login-password"
-              class="mt-2 w-full rounded-lg border border-sky-200 bg-white px-4 py-2 text-slate-900 focus:border-primary-400 focus:ring-primary-400"
-              placeholder="••••••••"
-              autocomplete="current-password"
-            />
-          </div>
-          <button
-            type="submit"
-            [disabled]="form.invalid || vm()?.status === 'authenticating'"
-            class="flex w-full items-center justify-center gap-2 rounded-lg bg-primary-600 py-2 text-white transition hover:bg-primary-500 disabled:cursor-not-allowed disabled:bg-primary-200"
+
+        <p-card styleClass="rounded-lg shadow-lg p-8 border border-border">
+          <form
+            [formGroup]="form"
+            (ngSubmit)="onSubmit()"
+            class="flex flex-col gap-4"
           >
-            <span *ngIf="vm()?.status !== 'authenticating'">Sign in</span>
-            <span *ngIf="vm()?.status === 'authenticating'" class="flex items-center gap-2">
-              Authenticating…
-            </span>
-          </button>
-        </form>
-        <p *ngIf="vm()?.error" class="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {{ vm()?.error }}
-        </p>
-        <div class="mt-6 text-xs text-slate-500">
-          <p>Demo credentials:</p>
-          <ul class="mt-2 space-y-1">
-            <li><span class="font-medium text-slate-700">Owner</span>: owner@turbovets.test / ChangeMe123!</li>
-            <li><span class="font-medium text-slate-700">Admin</span>: admin@turbovets.test / ChangeMe123!</li>
-            <li><span class="font-medium text-slate-700">Viewer</span>: viewer@turbovets.test / ChangeMe123!</li>
+            <p-fluid>
+              <div class="flex flex-col gap-2">
+                <p-floatLabel>
+                  <p-iconField iconPosition="left">
+                    <p-inputIcon>
+                      <i class="pi pi-envelope"></i>
+                    </p-inputIcon>
+                    <input
+                      pInputText
+                      type="email"
+                      id="login-email"
+                      formControlName="email"
+                      autocomplete="username"
+                      class="w-full"
+                      [ngClass]="{
+                        'p-invalid':
+                          form.controls.email.invalid &&
+                          form.controls.email.touched
+                      }"
+                    />
+                  </p-iconField>
+                  <label for="login-email">Email</label>
+                </p-floatLabel>
+                <small
+                  *ngIf="
+                    form.controls.email.invalid && form.controls.email.touched
+                  "
+                  class="text-xs text-red-500"
+                >
+                  Enter a valid email address.
+                </small>
+              </div>
+
+              <div class="mt-2 flex flex-col gap-2">
+                <p-floatLabel>
+                  <p-iconField iconPosition="left">
+                    <p-inputIcon>
+                      <i class="pi pi-lock"></i>
+                    </p-inputIcon>
+                    <p-password
+                      formControlName="password"
+                      inputId="login-password"
+                      [feedback]="false"
+                      toggleMask
+                      autocomplete="current-password"
+                      class="w-full"
+                      [inputStyleClass]="
+                        form.controls.password.invalid &&
+                        form.controls.password.touched
+                          ? 'p-invalid w-full'
+                          : 'w-full'
+                      "
+                    ></p-password>
+                  </p-iconField>
+                  <label for="login-password">Password</label>
+                </p-floatLabel>
+                <small
+                  *ngIf="
+                    form.controls.password.invalid &&
+                    form.controls.password.touched
+                  "
+                  class="text-xs text-red-500"
+                >
+                  Password must be at least 8 characters long.
+                </small>
+              </div>
+            </p-fluid>
+
+            <button
+              pButton
+              type="button"
+              class="w-full"
+              [loading]="vm().status === 'authenticating'"
+              [disabled]="vm().status === 'authenticating'"
+              (click)="onSubmit()"
+            >
+              <span class="pi pi-sign-in mr-2" aria-hidden="true"></span>
+              <span class="p-button-label">Sign in</span>
+            </button>
+          </form>
+
+          <p-message
+            *ngIf="vm().error"
+            severity="error"
+            [text]="vm().error!"
+            styleClass="mt-4"
+          ></p-message>
+
+          <p-divider align="center" type="dashed" styleClass="mt-6">
+            <span class="text-xs uppercase tracking-wide text-surface-500"
+              >Demo credentials</span
+            >
+          </p-divider>
+          <ul class="mt-3 space-y-2 text-sm text-surface-600">
+            <li>
+              <span class="font-medium text-surface-900">Owner</span>:
+              owner@turbovets.test / ChangeMe123!
+            </li>
+            <li>
+              <span class="font-medium text-surface-900">Admin</span>:
+              admin@turbovets.test / ChangeMe123!
+            </li>
+            <li>
+              <span class="font-medium text-surface-900">Viewer</span>:
+              viewer@turbovets.test / ChangeMe123!
+            </li>
           </ul>
-        </div>
+        </p-card>
       </div>
-    </div>
+    </main>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -80,7 +179,7 @@ export class LoginPageComponent {
       status: this.store.select(selectAuthStatus),
       error: this.store.select(selectAuthError),
     }),
-    { initialValue: { status: 'idle', error: null } },
+    { initialValue: { status: 'idle', error: null } }
   );
 
   readonly form = this.fb.nonNullable.group({
