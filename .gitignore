@@ -52,3 +52,4 @@ apps/api/data/*.sqlite
 apps/api/data/*.db
 
 AGENTS.md
+CLAUDE.md
