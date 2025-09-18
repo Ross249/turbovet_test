@@ -13,7 +13,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { Store } from '@ngrx/store';
-import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { selectAuthUser } from '../../state/auth/auth.selectors';
 import {
   selectTaskSummary,
@@ -34,8 +34,7 @@ import { CdkDrag, CdkDragDrop, CdkDropList, DragDropModule } from '@angular/cdk/
 import { OrganizationsApiService } from '../../core/api/organizations-api.service';
 import { AuditApiService } from '../../core/api/audit-api.service';
 import { OrganizationDto } from '@turbovetnx/data';
-import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
-import { merge, of } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { selectAllTasks } from '../../state/tasks/tasks.reducer';
 import { AuthActions } from '../../state/auth/auth.actions';
 import { ToolbarModule } from 'primeng/toolbar';
@@ -55,6 +54,10 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { MessageModule } from 'primeng/message';
 import { PanelModule } from 'primeng/panel';
 import { InputIconModule } from 'primeng/inputicon';
+import { MenuModule } from 'primeng/menu';
+import { MenuItem } from 'primeng/api';
+import { TaskSortOption, TASK_SORT_DEFAULT } from '../../state/tasks/task-sort.model';
+import { selectTasksSort } from '../../state/tasks/tasks.selectors';
 
 @Component({
   standalone: true,
@@ -82,6 +85,7 @@ import { InputIconModule } from 'primeng/inputicon';
     MessageModule,
     PanelModule,
     InputIconModule,
+    MenuModule,
   ],
   templateUrl: './dashboard-page.component.html',
   styleUrls: ['./dashboard-page.component.css'],
@@ -186,6 +190,33 @@ export class DashboardPageComponent implements OnInit {
     priority: [''],
   });
 
+  protected readonly sort = toSignal(this.store.select(selectTasksSort), {
+    initialValue: TASK_SORT_DEFAULT,
+  });
+
+  protected readonly sortDefinitions: Array<{ label: string; value: TaskSortOption }> = [
+    { label: 'Recently Updated', value: 'recent' },
+    { label: 'Oldest Updated', value: 'oldest' },
+    { label: 'Priority (High to Low)', value: 'priorityHigh' },
+    { label: 'Title (A to Z)', value: 'titleAsc' },
+  ];
+
+  protected get sortMenuItems(): MenuItem[] {
+    const activeSort = this.sort();
+    return this.sortDefinitions.map(({ label, value }) => ({
+      label,
+      icon: value === activeSort ? 'pi pi-check' : undefined,
+      command: () => this.applySort(value),
+    }));
+  }
+
+  protected get activeSortLabel(): string {
+    const active = this.sortDefinitions.find(
+      (definition) => definition.value === this.sort(),
+    );
+    return active?.label ?? 'Recently Updated';
+  }
+
   protected readonly organizations = signal<OrganizationDto[]>([]);
   protected readonly isCreateDialogOpen = signal(false);
 
@@ -253,7 +284,26 @@ export class DashboardPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadOrganizations();
-    this.bindFilters();
+    this.applyFilters();
+  }
+
+  protected applyFilters(): void {
+    const value = this.filterForm.getRawValue();
+    const filter: TaskFilter = {
+      status: value.status ? (value.status as TaskStatus) : undefined,
+      category: value.category?.trim() ? value.category : undefined,
+      search: value.search?.trim() ? value.search.trim() : undefined,
+      priority: value.priority ? (value.priority as TaskPriority) : undefined,
+    };
+    this.store.dispatch(TasksActions.setFilters({ filter }));
+    this.store.dispatch(TasksActions.loadTasks({ filter }));
+  }
+
+  protected applySort(option: TaskSortOption): void {
+    if (option === this.sort()) {
+      return;
+    }
+    this.store.dispatch(TasksActions.setSort({ sort: option }));
   }
 
   private loadOrganizations(): void {
@@ -268,33 +318,6 @@ export class DashboardPageComponent implements OnInit {
         this.organizations.set([]);
       },
     });
-  }
-
-  private bindFilters(): void {
-    merge(
-      of(this.filterForm.getRawValue()),
-      this.filterForm.valueChanges.pipe(
-        debounceTime(250),
-        distinctUntilChanged(
-          (previous, current) =>
-            previous.status === current.status &&
-            previous.category === current.category &&
-            previous.search === current.search &&
-            previous.priority === current.priority,
-        ),
-      ),
-    )
-      .pipe(takeUntilDestroyed())
-      .subscribe((value) => {
-        const filter: TaskFilter = {
-          status: value.status ? (value.status as TaskStatus) : undefined,
-          category: value.category || undefined,
-          search: value.search || undefined,
-          priority: value.priority ? (value.priority as TaskPriority) : undefined,
-        };
-        this.store.dispatch(TasksActions.setFilters({ filter }));
-        this.store.dispatch(TasksActions.loadTasks({ filter }));
-      });
   }
 
   protected openCreateDialog(): void {

@@ -5,6 +5,7 @@ import {
   TaskFilter,
   UpdateTaskRequest,
 } from '@turbovetnx/data';
+import { TaskSortOption } from './task-sort.model';
 
 export const TasksActions = createActionGroup({
   source: 'Tasks',
@@ -22,6 +23,7 @@ export const TasksActions = createActionGroup({
     'Delete Task Success': props<{ taskId: string }>(),
     'Delete Task Failure': props<{ error: string }>(),
     'Set Filters': props<{ filter: TaskFilter }>(),
+    'Set Sort': props<{ sort: TaskSortOption }>(),
     'Reset State': emptyProps(),
   },
 });

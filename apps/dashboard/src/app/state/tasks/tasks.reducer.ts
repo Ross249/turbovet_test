@@ -2,11 +2,13 @@ import { createFeature, createReducer, on } from '@ngrx/store';
 import { createEntityAdapter, EntityState } from '@ngrx/entity';
 import { TasksActions } from './tasks.actions';
 import { TaskDto, TaskFilter } from '@turbovetnx/data';
+import { TASK_SORT_DEFAULT, TaskSortOption } from './task-sort.model';
 
 export interface TasksState extends EntityState<TaskDto> {
   loading: boolean;
   error: string | null;
   filter: TaskFilter;
+  sort: TaskSortOption;
 }
 
 const adapter = createEntityAdapter<TaskDto>({
@@ -17,6 +19,7 @@ const adapter = createEntityAdapter<TaskDto>({
 const initialState: TasksState = adapter.getInitialState({
   loading: false,
   filter: {},
+  sort: TASK_SORT_DEFAULT,
   error: null,
 });
 
@@ -28,6 +31,10 @@ export const tasksFeature = createFeature({
     on(TasksActions.setFilters, (state, { filter }) => ({
       ...state,
       filter,
+    })),
+    on(TasksActions.setSort, (state, { sort }) => ({
+      ...state,
+      sort,
     })),
     on(TasksActions.loadTasks, (state, { filter }) => ({
       ...state,

@@ -1,10 +1,12 @@
 import { createSelector } from '@ngrx/store';
 import { tasksFeature, selectAllTasks } from './tasks.reducer';
 import { TaskPriority, TaskStatus } from '@turbovetnx/data';
+import { sortTasksByOption } from './task-sort.model';
 
 export const selectTasksLoading = tasksFeature.selectLoading;
 export const selectTasksFilter = tasksFeature.selectFilter;
 export const selectTasksError = tasksFeature.selectError;
+export const selectTasksSort = tasksFeature.selectSort;
 
 export const selectTaskSummary = createSelector(selectAllTasks, (tasks) => {
   const total = tasks.length;
@@ -30,9 +32,10 @@ export const selectTaskSummary = createSelector(selectAllTasks, (tasks) => {
 export const selectFilteredTasks = createSelector(
   selectAllTasks,
   selectTasksFilter,
-  (tasks, filter) => {
+  selectTasksSort,
+  (tasks, filter, sort) => {
     const search = filter.search?.trim().toLowerCase();
-    return tasks.filter((task) => {
+    const filtered = tasks.filter((task) => {
       if (filter.status && task.status !== filter.status) {
         return false;
       }
@@ -50,6 +53,7 @@ export const selectFilteredTasks = createSelector(
       }
       return true;
     });
+    return sortTasksByOption(filtered, sort);
   },
 );
 

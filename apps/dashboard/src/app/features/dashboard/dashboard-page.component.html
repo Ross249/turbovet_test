@@ -332,6 +332,7 @@
           <div style="display: flex; flex-direction: column; gap: 1rem">
             <form
               [formGroup]="filterForm"
+              (ngSubmit)="applyFilters()"
               style="
                 display: grid;
                 gap: 0.75rem;
@@ -382,21 +383,23 @@
                   gap: 0.5rem;
                 "
               >
+                <p-menu #sortMenu [model]="sortMenuItems" [popup]="true"></p-menu>
                 <button
                   pButton
                   type="button"
                   icon="pi pi-sort"
                   severity="secondary"
+                  (click)="sortMenu.toggle($event)"
                 >
-                  Sort
+                  Sort ({{ activeSortLabel }})
                 </button>
                 <button
                   pButton
-                  type="button"
+                  type="submit"
                   icon="pi pi-sliders-h"
                   severity="secondary"
                 >
-                  Filters
+                  Apply Filters
                 </button>
               </div>
             </form>
