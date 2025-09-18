@@ -383,7 +383,11 @@
                   gap: 0.5rem;
                 "
               >
-                <p-menu #sortMenu [model]="sortMenuItems" [popup]="true"></p-menu>
+                <p-menu
+                  #sortMenu
+                  [model]="sortMenuItems"
+                  [popup]="true"
+                ></p-menu>
                 <button
                   pButton
                   type="button"
@@ -391,7 +395,7 @@
                   severity="secondary"
                   (click)="sortMenu.toggle($event)"
                 >
-                  Sort ({{ activeSortLabel }})
+                  Sort: {{ activeSortLabel }}
                 </button>
                 <button
                   pButton
@@ -411,7 +415,13 @@
               [style]="{ 'border-radius': '1rem' }"
             ></p-message>
 
-            <div style="display: grid; grid-template-columns: 1fr; gap: 1rem">
+            <div
+              style="
+                display: grid;
+                gap: 1rem;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+              "
+            >
               <div
                 *ngFor="let column of statusColumns"
                 style="display: flex; flex-direction: column; gap: 0.75rem"
@@ -466,7 +476,9 @@
                       cdkDropList
                       [cdkDropListData]="tasksByStatus()[column.status]"
                       [id]="dropListId(column.status)"
-                      [cdkDropListConnectedTo]="connectedDropLists(column.status)"
+                      [cdkDropListConnectedTo]="
+                        connectedDropLists(column.status)
+                      "
                       (cdkDropListDropped)="drop($event, column.status)"
                       style="
                         display: flex;
@@ -593,6 +605,7 @@
             </div>
           </div>
         </p-tabpanel>
+
         <p-tabpanel value="audit">
           <div style="display: flex; flex-direction: column; gap: 1rem">
             <p-message
